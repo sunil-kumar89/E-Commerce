@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product List</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.6.0/css/bootstrap.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Product List</h1>
+    <div class="row">
+        <div class="col-md-3">
+            <h3>Filter by Category</h3>
+            <ul id="categories">
+                <li><a href="#" data-category="all">All</a></li>
+                <!-- Categories will be dynamically added here -->
+            </ul>
+        </div>
+        <div class="col-md-9">
+            <h3>Filter by Price</h3>
+            <form>
+                <div class="form-group">
+                    <label for="max-price">Maximum Price:</label>
+                    <input type="number" class="form-control" id="max-price" name="maxPrice">
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+            <br>
+            <h3>Product List</h3>
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                </tr>
+                </thead>
+                <tbody id="product-list">
+                <!-- Products will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function() {
+        // Load categories
+        $.getJSON("/categories", function(categories) {
+            $.each(categories, function(index, category) {
+                $("#categories").append("<li><a href='#' data-category='" + category.id + "'>" + category.name + "</a></li>");
+            });
+        });
+
+        // Handle category filtering
+        $("#categories").on("click", "a", function() {
+            var categoryId = $(this).data("category");
+            $.getJSON("/products?categoryId=" + categoryId, function(products) {
+                displayProducts(products);
+            });
+            return false;
+        });
+
+        // Handle price filtering
+        $("form").submit(function() {
+            var maxPrice = $("#max-price").val();
+            $.getJSON("/products?maxPrice=" + maxPrice, function(products) {
+                displayProducts(products);
+            });
+            return false;
+        });
+
+        // Load all products on page load
+        $.getJSON("/products", function(products) {
+            displayProducts(products);
+        });
+    });
+
+    // Display products in the table
+    function displayProducts(products) {
+        $("#product-list").empty();
+        $.each(products, function(index, product) {
+            $("#product-list").append("<tr><td>" + product.name + "</td><td>" + product.category.name + "</td><td>" + product.price + "</td></tr>");
+        });
+    }
+</script>
+</body>
+</html>
